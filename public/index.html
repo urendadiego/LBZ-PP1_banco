@@ -268,12 +268,12 @@
 
   // ── GUARD: si no hay sesión, al login ──────────────────
   const persona = JSON.parse(sessionStorage.getItem('persona') || 'null');
-  if (!persona) window.location.href = '/login.html';
+  if (!persona) window.location.href = '/login';
 
   // ── LOGOUT ────────────────────────────────────────────
   function logout() {
     sessionStorage.removeItem('persona');
-    window.location.href = '/login.html';
+    window.location.href = '/login';
   }
 
   // ── NAV ───────────────────────────────────────────────
