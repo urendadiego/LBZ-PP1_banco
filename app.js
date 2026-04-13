@@ -1,9 +1,17 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const personaController = require('./controllers/personaController');
 const tablaController = require('./controllers/tablaController');
+const authController = require('./controllers/authController');
 
+app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
+
+// Auth
+app.post('/api/login', authController.login);
+app.get('/login', (req, res) => res.sendFile('login.html', { root: 'public' }));
 
 // Endpoints con joins
 app.get('/api/personas', personaController.obtenerPersonas);

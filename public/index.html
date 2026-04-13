@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeBanking · Mi cuenta</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --border:  #2a2d3e;
+      --accent:  #4f8ef7;
+      --accent2: #7c5cbf;
+      --success: #34c77b;
+      --warning: #f5a623;
+      --danger:  #e05353;
+      --text:    #e2e8f0;
+      --muted:   #8892a4;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand { font-size: 18px; font-weight: 700; color: var(--accent); }
+    .user-info { display: flex; align-items: center; gap: 14px; }
+    .user-info .name { font-size: 14px; color: var(--text); }
+    .user-info .name span { color: var(--muted); font-weight: 400; }
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── NAV TABS ── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      gap: 4px;
+    }
+    nav a {
+      display: inline-block;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: all .15s;
+    }
+    nav a:hover { color: var(--text); }
+    nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── CONTENIDO ── */
+    .page { display: none; padding: 32px; max-width: 900px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* ── SALUDO ── */
+    .greeting {
+      margin-bottom: 28px;
+    }
+    .greeting h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .greeting p  { font-size: 14px; color: var(--muted); }
+
+    /* ── CARDS DE PRODUCTOS ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .product-card {
+      border-radius: 12px;
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .product-card.cuenta  { background: linear-gradient(135deg, #1a2f4a, #1e3a5f); border: 1px solid #2a4a6e; }
+    .product-card.tarjeta { background: linear-gradient(135deg, #2a1a4a, #341e62); border: 1px solid #4a2a7e; }
+
+    .product-card .p-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: rgba(255,255,255,.5);
+      margin-bottom: 14px;
+    }
+    .product-card .p-main {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .product-card.cuenta .p-main  { color: #6dd5a8; }
+    .product-card.tarjeta .p-main { color: #b59af0; }
+
+    .product-card .p-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 16px;
+    }
+    .product-card .p-detail {
+      font-size: 12px;
+      color: rgba(255,255,255,.6);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-success { background: rgba(52,199,123,.15); color: var(--success); }
+    .badge-warning { background: rgba(245,166,35,.15);  color: var(--warning); }
+    .badge-danger  { background: rgba(224,83,83,.15);   color: var(--danger); }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* ── TABLA ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: rgba(255,255,255,.03);
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 12px 16px; }
+
+    /* ── INFO PERSONAL ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 20px;
+    }
+    .info-item .key { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+    .info-item .val { font-size: 15px; font-weight: 500; }
+
+    .state-msg { padding: 32px; text-align: center; color: var(--muted); font-size: 14px; }
+
+    /* ── ROLES ── */
+    .roles-wrap { padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .role-chip {
+      background: rgba(124,92,191,.15);
+      color: var(--accent2);
+      border: 1px solid rgba(124,92,191,.3);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">🏦 HomeBanking</div>
+    <div class="user-info">
+      <div class="name">Hola, <span id="header-nombre">—</span></div>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+    </div>
+  </header>
+
+  <nav>
+    <a href="#" class="active" data-page="inicio">Inicio</a>
+    <a href="#" data-page="productos">Mis productos</a>
+    <a href="#" data-page="perfil">Mi perfil</a>
+  </nav>
+
+  <!-- INICIO -->
+  <div class="page active" id="page-inicio">
+    <div class="greeting">
+      <h2>Buenos días, <span id="saludo-nombre">—</span> 👋</h2>
+      <p>Acá podés ver el resumen de tus productos bancarios.</p>
+    </div>
+    <div class="product-grid" id="product-grid">
+      <div class="state-msg">Cargando productos...</div>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div class="page" id="page-productos">
+    <div class="panel">
+      <div class="panel-header">Mis productos</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th><th>Estado</th><th>Detalle</th><th>Fecha alta</th>
+            </tr>
+          </thead>
+          <tbody id="prod-tbody">
+            <tr><td colspan="4" class="state-msg">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Mis roles</div>
+      <div id="roles-container" class="roles-wrap">
+        <span style="color:var(--muted);font-size:13px">Cargando...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="page" id="page-perfil">
+    <div class="panel">
+      <div class="panel-header">Datos personales</div>
+      <div class="info-grid" id="perfil-grid">
+        <div class="state-msg">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API = '/api';
+
+  // ── GUARD: si no hay sesión, al login ──────────────────
+  const persona = JSON.parse(sessionStorage.getItem('persona') || 'null');
+  if (!persona) window.location.href = '/login.html';
+
+  // ── LOGOUT ────────────────────────────────────────────
+  function logout() {
+    sessionStorage.removeItem('persona');
+    window.location.href = '/login.html';
+  }
+
+  // ── NAV ───────────────────────────────────────────────
+  document.querySelectorAll('nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('nav a').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+      document.getElementById('page-' + a.dataset.page).classList.add('active');
+    });
+  });
+
+  // ── CARGAR DATOS ──────────────────────────────────────
+  async function fetchJSON(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Error ' + r.status);
+    return r.json();
+  }
+
+  async function cargarDatos() {
+    document.getElementById('header-nombre').textContent = persona.nombre;
+    document.getElementById('saludo-nombre').textContent = persona.nombre;
+
+    renderPerfil(persona);
+
+    try {
+      const [productos, roles] = await Promise.all([
+        fetchJSON(`${API}/personas/${persona.id}/productos`).catch(() => []),
+        fetchJSON(`${API}/personas/${persona.id}/roles`).catch(() => []),
+      ]);
+      renderCards(productos);
+      renderTablaProductos(productos);
+      renderRoles(roles);
+    } catch(e) {
+      document.getElementById('product-grid').innerHTML =
+        `<div class="state-msg">Error al cargar: ${e.message}</div>`;
+    }
+  }
+
+  // ── CARDS INICIO ──────────────────────────────────────
+  function renderCards(productos) {
+    const grid = document.getElementById('product-grid');
+    if (!productos.length) {
+      grid.innerHTML = '<div class="state-msg">No tenés productos asociados.</div>';
+      return;
+    }
+    grid.innerHTML = productos.map(p => {
+      if (p.cbu) {
+        return `
+          <div class="product-card cuenta">
+            <div class="p-label">Cuenta bancaria · ${p.moneda || 'ARS'}</div>
+            <div class="p-main">$${parseFloat(p.saldo || 0).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+            <div class="p-sub">Saldo disponible</div>
+            <div class="p-detail">
+              <span>CBU: ${p.cbu}</span>
+              ${p.alias ? `<span>Alias: ${p.alias}</span>` : ''}
+              <span style="margin-top:6px">${badgeEstado(p.estado)}</span>
+            </div>
+          </div>`;
+      } else {
+        return `
+          <div class="product-card tarjeta">
+            <div class="p-label">Tarjeta de crédito · ${p.marca || '—'}</div>
+            <div class="p-main">**** **** **** ${p.numero_tarjeta ? p.numero_tarjeta.slice(-4) : '****'}</div>
+            <div class="p-sub">Límite: $${parseFloat(p.limite_compra || 0).toLocaleString('es-AR')}</div>
+            <div class="p-detail">
+              <span>Vence: ${p.fecha_vencimiento ? new Date(p.fecha_vencimiento).toLocaleDateString('es-AR') : '—'}</span>
+              <span>Cierre: día ${p.dia_cierre || '—'}</span>
+              <span style="margin-top:6px">${badgeEstado(p.estado)}</span>
+            </div>
+          </div>`;
+      }
+    }).join('');
+  }
+
+  // ── TABLA PRODUCTOS ───────────────────────────────────
+  function renderTablaProductos(productos) {
+    const tbody = document.getElementById('prod-tbody');
+    if (!productos.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="state-msg">Sin productos</td></tr>';
+      return;
+    }
+    tbody.innerHTML = productos.map(p => `
+      <tr>
+        <td>${badgeTipo(p.tipo)}</td>
+        <td>${badgeEstado(p.estado)}</td>
+        <td>${p.cbu
+          ? `CBU: ${p.cbu}${p.alias ? ' · Alias: ' + p.alias : ''}`
+          : `**** ${p.numero_tarjeta ? p.numero_tarjeta.slice(-4) : '—'} · ${p.marca || '—'}`
+        }</td>
+        <td>${p.fecha_alta ? new Date(p.fecha_alta).toLocaleDateString('es-AR') : '—'}</td>
+      </tr>`).join('');
+  }
+
+  // ── ROLES ─────────────────────────────────────────────
+  function renderRoles(roles) {
+    const c = document.getElementById('roles-container');
+    if (!roles.length) {
+      c.innerHTML = '<span style="color:var(--muted);font-size:13px">Sin roles asignados</span>';
+      return;
+    }
+    c.innerHTML = roles.map(r =>
+      `<span class="role-chip">${r.nombre_rol}</span>`
+    ).join('');
+  }
+
+  // ── PERFIL ────────────────────────────────────────────
+  function renderPerfil(p) {
+    document.getElementById('perfil-grid').innerHTML = [
+      ['Nombre',       p.nombre],
+      ['Apellido',     p.apellido],
+      ['DNI',          p.dni],
+      ['Email',        p.email      || '—'],
+      ['Teléfono',     p.telefono   || '—'],
+      ['Dirección',    p.direccion  || '—'],
+      ['Fecha de nac.',p.fecha_nac  ? new Date(p.fecha_nac).toLocaleDateString('es-AR') : '—'],
+    ].map(([k, v]) => `
+      <div class="info-item">
+        <div class="key">${k}</div>
+        <div class="val">${v}</div>
+      </div>`).join('');
+  }
+
+  // ── HELPERS ───────────────────────────────────────────
+  function badgeEstado(v) {
+    const map = { ACTIVO: 'success', BLOQUEADO: 'warning', CERRADO: 'danger' };
+    return `<span class="badge badge-${map[v] || 'success'}">${v}</span>`;
+  }
+  function badgeTipo(v) {
+    return `<span style="font-weight:600">${v}</span>`;
+  }
+
+  // ── INIT ──────────────────────────────────────────────
+  cargarDatos();
+</script>
+</body>
+</html>

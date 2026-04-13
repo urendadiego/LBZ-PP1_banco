@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeBanking · Ingresar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --border:  #2a2d3e;
+      --accent:  #4f8ef7;
+      --danger:  #e05353;
+      --text:    #e2e8f0;
+      --muted:   #8892a4;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .brand .icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .brand h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .brand p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 15px;
+      margin-bottom: 18px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input:focus { border-color: var(--accent); }
+
+    button[type="submit"] {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+      margin-top: 4px;
+    }
+    button[type="submit"]:hover { opacity: .88; }
+    button[type="submit"]:disabled { opacity: .5; cursor: not-allowed; }
+
+    .error-msg {
+      display: none;
+      background: rgba(224,83,83,.12);
+      border: 1px solid rgba(224,83,83,.3);
+      color: var(--danger);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .error-msg.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <span class="icon">🏦</span>
+      <h1>HomeBanking</h1>
+      <p>Ingresá con tu DNI y clave</p>
+    </div>
+
+    <form id="login-form">
+      <div class="error-msg" id="error-msg">DNI o clave incorrectos</div>
+
+      <label for="dni">DNI</label>
+      <input type="text" id="dni" placeholder="12345678" autocomplete="username" required />
+
+      <label for="clave">Clave</label>
+      <input type="password" id="clave" placeholder="••••••••" autocomplete="current-password" required />
+
+      <button type="submit" id="btn-submit">Ingresar</button>
+    </form>
+  </div>
+
+  <script>
+    // Si ya hay sesión activa, ir directo al dashboard
+    if (sessionStorage.getItem('persona')) {
+      window.location.href = '/';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit');
+      const errorMsg = document.getElementById('error-msg');
+      errorMsg.classList.remove('visible');
+      btn.disabled = true;
+      btn.textContent = 'Ingresando...';
+
+      const dni   = document.getElementById('dni').value.trim();
+      const clave = document.getElementById('clave').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dni, clave }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorMsg.textContent = data.error || 'DNI o clave incorrectos';
+          errorMsg.classList.add('visible');
+          return;
+        }
+
+        sessionStorage.setItem('persona', JSON.stringify(data.persona));
+        window.location.href = '/';
+      } catch (err) {
+        errorMsg.textContent = 'Error de conexión con el servidor';
+        errorMsg.classList.add('visible');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Ingresar';
+      }
+    });
+  </script>
+</body>
+</html>
