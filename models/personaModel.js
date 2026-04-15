@@ -49,6 +49,12 @@ const Persona = {
     const query = 'INSERT INTO Personas (nombre, apellido, dni, email) VALUES ($1, $2, $3, $4) RETURNING *';
     const { rows } = await db.query(query, [nombre, apellido, dni, email]);
     return rows[0];
+  },
+
+  delete: async (id) => {
+    const query = 'DELETE FROM Personas WHERE id = $1 RETURNING *';
+    const { rows } = await db.query(query, [id]);
+    return rows[0];
   }
 };
 

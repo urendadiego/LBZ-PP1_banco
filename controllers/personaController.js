@@ -37,3 +37,13 @@ exports.crearPersona = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.eliminarPersona = async (req, res) => {
+  try {
+    const persona = await Persona.delete(req.params.id);
+    if (!persona) return res.status(404).json({ error: 'Persona no encontrada' });
+    res.json(persona);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

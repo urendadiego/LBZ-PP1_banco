@@ -18,6 +18,7 @@ app.get('/api/personas', personaController.obtenerPersonas);
 app.get('/api/personas/:id/roles', personaController.obtenerRoles);
 app.get('/api/personas/:id/productos', personaController.obtenerProductos);
 app.post('/api/personas', personaController.crearPersona);
+app.delete('/api/personas/:id', personaController.eliminarPersona);
 
 // Endpoints sin joins (tablas crudas)
 app.get('/api/tablas/:tabla', tablaController.obtenerTabla);
