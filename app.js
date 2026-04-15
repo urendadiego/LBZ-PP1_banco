@@ -20,8 +20,15 @@ app.get('/api/personas/:id/productos', personaController.obtenerProductos);
 app.post('/api/personas', personaController.crearPersona);
 app.delete('/api/personas/:id', personaController.eliminarPersona);
 
-// Endpoints sin joins (tablas crudas)
-app.get('/api/tablas/:tabla', tablaController.obtenerTabla);
+// Admin panel
+app.get('/admin', (req, res) => res.sendFile('admin.html', { root: 'public' }));
+
+// Endpoints sin joins (tablas crudas) — CRUD genérico
+app.get('/api/tablas/:tabla',      tablaController.obtenerTabla);
+app.get('/api/tablas/:tabla/:id',  tablaController.obtenerPorId);
+app.post('/api/tablas/:tabla',     tablaController.crear);
+app.put('/api/tablas/:tabla/:id',  tablaController.actualizar);
+app.delete('/api/tablas/:tabla/:id', tablaController.eliminar);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));

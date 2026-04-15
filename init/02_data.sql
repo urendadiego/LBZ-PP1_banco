@@ -5,10 +5,10 @@ INSERT INTO Roles (nombre_rol, descripcion) VALUES
 ('Empleado', 'Personal administrativo del banco');
 
 -- 3. POBLAR PERSONAS
-INSERT INTO Personas (nombre, apellido, dni, direccion, email, telefono, fecha_nac) VALUES 
-('Juan', 'Pérez', '35123456', 'Calle Falsa 123', 'juan.perez@email.com', '1144556677', '1990-05-15'),
-('María', 'García', '28999888', 'Av. Siempre Viva 742', 'm.garcia@email.com', '1122334455', '1982-10-20'),
-('Ricardo', 'Fort', '20111222', 'Miami Beach 100', 'elcomandante@email.com', '1100112233', '1968-11-25');
+INSERT INTO Personas (nombre, apellido, dni, clave, direccion, email, telefono, fecha_nac) VALUES
+('Juan', 'Pérez', '35123456', '1234', 'Calle Falsa 123', 'juan.perez@email.com', '1144556677', '1990-05-15'),
+('María', 'García', '28999888', '1234', 'Av. Siempre Viva 742', 'm.garcia@email.com', '1122334455', '1982-10-20'),
+('Ricardo', 'Fort', '20111222', '1234', 'Miami Beach 100', 'elcomandante@email.com', '1100112233', '1968-11-25');
 
 -- 4. ASIGNAR ROLES (Roles_x_Personas)
 INSERT INTO Roles_x_Personas (id_persona, id_rol) VALUES 

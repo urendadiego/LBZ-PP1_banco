@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS Personas (
     nombre VARCHAR(255) NOT NULL,
     apellido VARCHAR(255) NOT NULL,
     dni VARCHAR(20) UNIQUE NOT NULL,
+    clave VARCHAR(255),
     direccion VARCHAR(255),
     email VARCHAR(255),
     telefono VARCHAR(50),

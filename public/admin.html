@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · HomeBanking</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --surface2: #21253a;
+      --border:   #2a2d3e;
+      --accent:   #4f8ef7;
+      --success:  #34c77b;
+      --warning:  #f5a623;
+      --danger:   #e05353;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --sidebar-w: 220px;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .brand { font-size: 16px; font-weight: 700; color: var(--accent); }
+    .header-badge { background: rgba(224,83,83,.15); color: var(--danger); border: 1px solid rgba(224,83,83,.3); padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; letter-spacing: .5px; }
+
+    /* LAYOUT */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* SIDEBAR */
+    aside {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding: 12px 0;
+    }
+    .sidebar-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; padding: 8px 16px 4px; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all .12s;
+      user-select: none;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+    .sidebar-item.active { background: rgba(79,142,247,.08); color: var(--accent); border-left-color: var(--accent); }
+    .sidebar-item .icon { font-size: 15px; width: 18px; text-align: center; }
+
+    /* MAIN */
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* TOOLBAR */
+    .toolbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .toolbar h2 { font-size: 16px; font-weight: 700; flex: 1; min-width: 120px; }
+    .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .search-group { display: flex; gap: 0; }
+    .search-group input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-right: none;
+      border-radius: 6px 0 0 6px;
+      padding: 7px 12px;
+      color: var(--text);
+      font-size: 13px;
+      width: 160px;
+      outline: none;
+    }
+    .search-group input:focus { border-color: var(--accent); }
+    .search-group button {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 0 6px 6px 0;
+      padding: 7px 12px;
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .search-group button:hover { background: var(--border); }
+
+    .btn { padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .12s; }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-ghost   { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+    /* TABLE AREA */
+    .table-area { flex: 1; overflow: auto; padding: 20px 24px; }
+
+    .empty-state { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--muted); font-size: 14px; }
+
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--surface2);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.025); }
+    tbody td { padding: 10px 14px; vertical-align: middle; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .td-actions { display: flex; gap: 6px; white-space: nowrap; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: none; font-weight: 600; }
+    .btn-edit   { background: rgba(79,142,247,.15); color: var(--accent); }
+    .btn-edit:hover { background: rgba(79,142,247,.28); }
+    .btn-del    { background: rgba(224,83,83,.12); color: var(--danger); }
+    .btn-del:hover { background: rgba(224,83,83,.25); }
+
+    .badge-true  { background: rgba(52,199,123,.15); color: var(--success); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .badge-false { background: rgba(224,83,83,.12); color: var(--danger); padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 28px 28px 20px;
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-header h3 { font-size: 16px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+    .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
+    .form-row input, .form-row select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .form-row input:focus, .form-row select:focus { border-color: var(--accent); }
+    .form-row input[type="checkbox"] { width: auto; margin-right: 6px; accent-color: var(--accent); }
+    .form-row .check-label { display: flex; align-items: center; font-size: 14px; color: var(--text); }
+
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+    /* TOAST */
+    .toast-wrap { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      min-width: 240px;
+      max-width: 340px;
+      animation: fadeIn .2s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error   { border-left-color: var(--danger); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* CONFIRM */
+    .confirm-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 150;
+    }
+    .confirm-overlay.hidden { display: none; }
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      width: 340px;
+      text-align: center;
+    }
+    .confirm-box h4 { font-size: 15px; margin-bottom: 8px; }
+    .confirm-box p  { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .confirm-btns   { display: flex; gap: 10px; justify-content: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🏦 HomeBanking</div>
+  <span class="header-badge">ADMIN</span>
+</header>
+
+<div class="layout">
+
+  <aside id="sidebar">
+    <div class="sidebar-label">Tablas</div>
+    <!-- items generados por JS -->
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <h2 id="table-title">Seleccioná una tabla</h2>
+      <div class="toolbar-right" id="toolbar-actions" style="display:none">
+        <div class="search-group">
+          <input type="text" id="search-id" placeholder="Buscar por ID…" />
+          <button onclick="buscarPorId()">Buscar</button>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalNuevo()">+ Nuevo</button>
+      </div>
+    </div>
+
+    <div class="table-area">
+      <div class="empty-state" id="empty-state">← Seleccioná una tabla para comenzar</div>
+      <div class="panel" id="data-panel" style="display:none">
+        <div class="table-wrap">
+          <table>
+            <thead id="thead"></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL CREAR / EDITAR -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Nuevo registro</h3>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <form id="modal-form" onsubmit="return false"></form>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay hidden" id="confirm">
+  <div class="confirm-box">
+    <h4>¿Eliminar registro?</h4>
+    <p id="confirm-msg">Esta acción no se puede deshacer.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="cerrarConfirm()">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
+const TABLAS = [
+  { key: 'personas',          label: 'Personas',           icon: '👤', pk: 'id' },
+  { key: 'roles',             label: 'Roles',              icon: '🎭', pk: 'id_rol' },
+  { key: 'roles_x_personas',  label: 'Roles × Personas',   icon: '🔗', pk: null },
+  { key: 'tipos_producto',    label: 'Tipos de Producto',  icon: '📦', pk: 'id_tipo_producto' },
+  { key: 'estados_producto',  label: 'Estados Producto',   icon: '🚦', pk: 'id_estado_producto' },
+  { key: 'productos',         label: 'Productos',          icon: '💳', pk: 'id_producto' },
+  { key: 'cuentas_bancarias', label: 'Cuentas Bancarias',  icon: '🏦', pk: 'id_cuenta' },
+  { key: 'tarjetas_credito',  label: 'Tarjetas de Crédito',icon: '💳', pk: 'id_tarjeta' },
+];
+
+// Columnas excluidas del formulario (auto-generadas)
+const EXCLUIR_FORM = ['id', 'id_rol', 'id_tipo_producto', 'id_estado_producto',
+  'id_producto', 'id_cuenta', 'id_tarjeta', 'fecha_alta', 'fecha_creacion'];
+
+const API = '/api/tablas';
+
+let tablaActual   = null;
+let modoModal     = 'crear';  // 'crear' | 'editar'
+let idEditando    = null;
+let fnConfirm     = null;
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+const sidebar = document.getElementById('sidebar');
+TABLAS.forEach(t => {
+  const el = document.createElement('div');
+  el.className = 'sidebar-item';
+  el.dataset.key = t.key;
+  el.innerHTML = `<span class="icon">${t.icon}</span>${t.label}`;
+  el.onclick = () => cargarTabla(t.key);
+  sidebar.appendChild(el);
+});
+
+// ── CARGA DE TABLA ────────────────────────────────────────────────────────────
+async function cargarTabla(key) {
+  tablaActual = TABLAS.find(t => t.key === key);
+  document.querySelectorAll('.sidebar-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.key === key));
+  document.getElementById('table-title').textContent = tablaActual.label;
+  document.getElementById('toolbar-actions').style.display = 'flex';
+  document.getElementById('search-id').value = '';
+
+  // Ocultar buscar por ID si no tiene PK simple
+  document.querySelector('.search-group').style.display =
+    tablaActual.pk ? 'flex' : 'none';
+
+  try {
+    const rows = await fetchJSON(`${API}/${key}`);
+    renderTabla(rows);
+  } catch (e) {
+    toast('Error al cargar: ' + e.message, 'error');
+  }
+}
+
+// ── RENDER TABLA ──────────────────────────────────────────────────────────────
+function renderTabla(rows) {
+  const empty = document.getElementById('empty-state');
+  const panel = document.getElementById('data-panel');
+
+  if (!rows.length) {
+    empty.textContent = 'Sin registros en esta tabla.';
+    empty.style.display = 'flex';
+    panel.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  panel.style.display = 'block';
+
+  const cols = Object.keys(rows[0]);
+
+  // THEAD
+  document.getElementById('thead').innerHTML = `<tr>
+    ${cols.map(c => `<th>${c}</th>`).join('')}
+    <th>Acciones</th>
+  </tr>`;
+
+  // TBODY
+  document.getElementById('tbody').innerHTML = rows.map(row => {
+    const id = filaId(row);
+    const tds = cols.map(c => {
+      const v = row[c];
+      if (typeof v === 'boolean') return `<td>${v ? '<span class="badge-true">sí</span>' : '<span class="badge-false">no</span>'}</td>`;
+      if (v === null || v === undefined) return `<td><span style="color:var(--muted)">—</span></td>`;
+      if (typeof v === 'string' && v.length > 40) return `<td title="${v}">${v.slice(0, 38)}…</td>`;
+      return `<td>${v}</td>`;
+    }).join('');
+    const editBtn   = tablaActual.pk
+      ? `<button class="btn-sm btn-edit" onclick='abrirModalEditar(${JSON.stringify(row)})'>Editar</button>` : '';
+    return `<tr>${tds}<td class="td-actions">
+      ${editBtn}
+      <button class="btn-sm btn-del" onclick="confirmarEliminar('${id}')">Eliminar</button>
+    </td></tr>`;
+  }).join('');
+}
+
+function filaId(row) {
+  if (tablaActual.pk) return row[tablaActual.pk];
+  // Roles_x_Personas
+  return `${row.id_persona}_${row.id_rol}`;
+}
+
+// ── BUSCAR POR ID ─────────────────────────────────────────────────────────────
+async function buscarPorId() {
+  const id = document.getElementById('search-id').value.trim();
+  if (!id) return cargarTabla(tablaActual.key);
+  try {
+    const row = await fetchJSON(`${API}/${tablaActual.key}/${id}`);
+    renderTabla([row]);
+  } catch (e) {
+    toast('No encontrado', 'error');
+  }
+}
+
+// ── MODAL CREAR ───────────────────────────────────────────────────────────────
+function abrirModalNuevo() {
+  modoModal  = 'crear';
+  idEditando = null;
+  document.getElementById('modal-title').textContent = `Nuevo · ${tablaActual.label}`;
+  generarFormulario({});
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+// ── MODAL EDITAR ──────────────────────────────────────────────────────────────
+function abrirModalEditar(row) {
+  modoModal  = 'editar';
+  idEditando = row[tablaActual.pk];
+  document.getElementById('modal-title').textContent = `Editar · ${tablaActual.label} #${idEditando}`;
+  generarFormulario(row);
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+
+// ── FORMULARIO DINÁMICO ───────────────────────────────────────────────────────
+function generarFormulario(row) {
+  const cols = Object.keys(row).length
+    ? Object.keys(row)
+    : columnasDefault(tablaActual.key);
+
+  const excluir = modoModal === 'crear' ? EXCLUIR_FORM : [];
+
+  const html = cols
+    .filter(c => !excluir.includes(c))
+    .map(c => {
+      const val = row[c];
+      const tipo = detectarTipo(c, val);
+
+      if (tipo === 'checkbox') return `
+        <div class="form-row">
+          <label class="check-label">
+            <input type="checkbox" name="${c}" ${val ? 'checked' : ''} /> ${c}
+          </label>
+        </div>`;
+
+      const valStr = val === null || val === undefined ? '' :
+        tipo === 'date' && val ? val.toString().slice(0, 10) : val;
+
+      return `
+        <div class="form-row">
+          <label>${c}</label>
+          <input type="${tipo}" name="${c}" value="${escHtml(String(valStr))}"
+            ${tipo === 'number' ? 'step="any"' : ''} />
+        </div>`;
+    }).join('');
+
+  document.getElementById('modal-form').innerHTML = html || '<p style="color:var(--muted);font-size:13px">Sin campos editables.</p>';
+}
+
+function detectarTipo(col, val) {
+  if (col === 'activo' || typeof val === 'boolean') return 'checkbox';
+  if (col === 'clave') return 'password';
+  if (col.startsWith('fecha') || col.endsWith('_nac') || col.endsWith('_vencimiento')) return 'date';
+  if (col.startsWith('id_') || ['saldo', 'limite_compra', 'dia_cierre'].includes(col)) return 'number';
+  return 'text';
+}
+
+function columnasDefault(key) {
+  const defaults = {
+    personas:          ['nombre', 'apellido', 'dni', 'clave', 'direccion', 'email', 'telefono', 'fecha_nac'],
+    roles:             ['nombre_rol', 'descripcion', 'activo'],
+    roles_x_personas:  ['id_persona', 'id_rol'],
+    tipos_producto:    ['nombre'],
+    estados_producto:  ['nombre'],
+    productos:         ['id_persona', 'id_tipo_producto', 'id_estado_producto'],
+    cuentas_bancarias: ['id_producto', 'cbu', 'alias', 'moneda', 'saldo'],
+    tarjetas_credito:  ['id_producto', 'numero_tarjeta', 'marca', 'fecha_vencimiento', 'limite_compra', 'dia_cierre'],
+  };
+  return defaults[key] || [];
+}
+
+// ── GUARDAR ───────────────────────────────────────────────────────────────────
+async function guardar() {
+  const form = document.getElementById('modal-form');
+  const data = {};
+
+  form.querySelectorAll('input, select').forEach(el => {
+    if (el.type === 'checkbox') {
+      data[el.name] = el.checked;
+    } else if (el.value !== '') {
+      data[el.name] = el.type === 'number' ? Number(el.value) : el.value;
+    }
+  });
+
+  try {
+    if (modoModal === 'crear') {
+      await fetchJSON(`${API}/${tablaActual.key}`, 'POST', data);
+      toast('Registro creado', 'success');
+    } else {
+      await fetchJSON(`${API}/${tablaActual.key}/${idEditando}`, 'PUT', data);
+      toast('Registro actualizado', 'success');
+    }
+    cerrarModal();
+    cargarTabla(tablaActual.key);
+  } catch (e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ── ELIMINAR ──────────────────────────────────────────────────────────────────
+function confirmarEliminar(id) {
+  document.getElementById('confirm-msg').textContent = `ID: ${id} — Esta acción no se puede deshacer.`;
+  fnConfirm = async () => {
+    try {
+      await fetchJSON(`${API}/${tablaActual.key}/${id}`, 'DELETE');
+      toast('Registro eliminado', 'success');
+      cargarTabla(tablaActual.key);
+    } catch (e) {
+      toast('Error: ' + e.message, 'error');
+    }
+    cerrarConfirm();
+  };
+  document.getElementById('confirm-ok').onclick = fnConfirm;
+  document.getElementById('confirm').classList.remove('hidden');
+}
+
+function cerrarConfirm() {
+  document.getElementById('confirm').classList.add('hidden');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const wrap = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+async function fetchJSON(url, method = 'GET', body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Cerrar modal clickando fuera
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) cerrarModal();
+});
+document.getElementById('confirm').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirm')) cerrarConfirm();
+});
+
+// Enter en buscar
+document.getElementById('search-id').addEventListener('keydown', e => {
+  if (e.key === 'Enter') buscarPorId();
+});
+</script>
+</body>
+</html>
